@@ -26,6 +26,7 @@ func main() {
 
 	getDistance(mapsClient)
 	streamLocation(mapsClient)
+	getVenues(mapsClient)
 }
 
 func getDistance(client pb.MapsClient) {
@@ -57,7 +58,7 @@ func streamLocation(client pb.MapsClient) {
 
 	for _, loc := range getRandomLocations() {
 
-		time.Sleep(2 * time.Second)
+		// time.Sleep(2 * time.Second)
 
 		if err := stream.Send(loc); err != nil {
 			log.Fatalf("%v.Send(%v) = %v", stream, loc, err)
@@ -70,6 +71,26 @@ func streamLocation(client pb.MapsClient) {
 	_, err = stream.CloseAndRecv()
 	if err != nil {
 		log.Fatalf("%v.CloseAndRecv() got error %v, want %v", stream, err, nil)
+	}
+}
+
+func getVenues(client pb.MapsClient) {
+	result, err := client.GetVenues(context.Background(), &pb.GetVenuesRequest{
+		Location: "38.8633,65.7978",
+		Radius:   500,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	log.Println("------------------------")
+	log.Println("Venues")
+	for _, venue := range result.GetVenues() {
+		log.Println("------------------------")
+		log.Printf("ID: %s", venue.GetId())
+		log.Printf("Name: %s", venue.GetName())
+		log.Printf("Address: %s", venue.GetAddress())
+		log.Printf("Rating: %0.1f", venue.GetRating())
 	}
 }
 

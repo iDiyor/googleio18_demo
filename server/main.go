@@ -1,24 +1,27 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"math/rand"
 	"net"
+	"net/http"
 	"time"
 
 	pb "googleio18_demo/proto"
 
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
 
 const (
-	port = ":2020"
+	port     = ":2020"
+	httpPort = ":4040"
 )
 
 func main() {
-	server := NewServer()
 
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
@@ -27,14 +30,34 @@ func main() {
 
 	defer lis.Close()
 
+	go runGRPC(lis)
+	runHTTP()
+}
+
+func runGRPC(lis net.Listener) {
+	server := NewServer()
+
 	grpcServer := grpc.NewServer()
 	pb.RegisterMapsServer(grpcServer, server)
-
-	log.Printf("gRPC server listening on port: %s", port)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		panic(err)
 	}
+}
+
+func runHTTP() {
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+
+	addr := fmt.Sprintf("localhost%s", port)
+
+	pb.RegisterMapsHandlerFromEndpoint(context.Background(), mux, addr, opts)
+
+	log.Printf("gRPC server listening on port: %s", port)
+
+	log.Printf("HTTP Listening on %s\n", httpPort)
+
+	http.ListenAndServe(httpPort, mux)
 }
 
 //#########################
@@ -86,6 +109,55 @@ func (s *Server) StreamLocation(stream pb.Maps_StreamLocationServer) error {
 		log.Println("Received a location")
 		log.Printf(" > latitude: %.1f", location.GetLat())
 		log.Printf(" > longitude: %.1f", location.GetLon())
+	}
+}
+
+// GetVenues ...
+func (s *Server) GetVenues(ctx context.Context, req *pb.GetVenuesRequest) (*pb.GetVenuesResponse, error) {
+	log.Println("------------------------")
+	log.Println("Finding venues....")
+	log.Printf(" > location: %s", req.GetLocation())
+	log.Printf(" > radius: %d M", req.GetRadius())
+
+	venues := getDummyVenues()
+
+	response := &pb.GetVenuesResponse{
+		Venues: venues,
+	}
+
+	return response, nil
+}
+
+//#########################
+// Helper methods
+//#########################
+
+func getDummyVenues() []*pb.Venue {
+	venueA := &pb.Venue{
+		Id:      "1",
+		Name:    "Venue-A",
+		Address: "Tashkent",
+		Rating:  4,
+	}
+
+	venueB := &pb.Venue{
+		Id:      "2",
+		Name:    "Venue-B",
+		Address: "London",
+		Rating:  3,
+	}
+
+	venueC := &pb.Venue{
+		Id:      "3",
+		Name:    "Venue-C",
+		Address: "New-York",
+		Rating:  2,
+	}
+
+	return []*pb.Venue{
+		venueA,
+		venueB,
+		venueC,
 	}
 }
 

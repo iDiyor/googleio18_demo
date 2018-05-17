@@ -1,8 +1,15 @@
 syntax="proto3";
 
+import "google/api/annotations.proto";
+
 service Maps {
     rpc GetDistance(GetDistanceRequest) returns (GetDistanceResponse);
     rpc StreamLocation(stream Location) returns (EmptyResponse);
+    rpc GetVenues(GetVenuesRequest) returns (GetVenuesResponse) {
+        option (google.api.http) = {
+            get: "/v1/venues"
+        };
+    }
 }
 
 message GetDistanceRequest {
@@ -20,3 +27,19 @@ message Location {
 }
 
 message EmptyResponse {}
+
+message GetVenuesRequest {
+    string location = 1;
+    int64 radius = 2;
+}
+
+message GetVenuesResponse {
+    repeated Venue venues = 1;
+}
+
+message Venue {
+    string id = 1;
+    string name = 2;
+    string address = 3;
+    double rating = 4;
+}
