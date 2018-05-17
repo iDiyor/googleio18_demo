@@ -1,0 +1,14 @@
+syntax="proto3";
+
+service Maps {
+    rpc GetDistance(GetDistanceRequest) returns (GetDistanceResponse);
+}
+
+message GetDistanceRequest {
+    string origin = 1;
+    string dest = 2;
+}
+
+message GetDistanceResponse {
+    int64 distance = 1;
+}
