@@ -2,6 +2,7 @@ syntax="proto3";
 
 service Maps {
     rpc GetDistance(GetDistanceRequest) returns (GetDistanceResponse);
+    rpc StreamLocation(stream Location) returns (EmptyResponse);
 }
 
 message GetDistanceRequest {
@@ -12,3 +13,10 @@ message GetDistanceRequest {
 message GetDistanceResponse {
     int64 distance = 1;
 }
+
+message Location {
+    double lon = 1;
+    double lat = 2;
+}
+
+message EmptyResponse {}

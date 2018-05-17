@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"math/rand"
 	"net"
@@ -68,6 +69,23 @@ func (s *Server) GetDistance(ctx context.Context, req *pb.GetDistanceRequest) (*
 	}
 
 	return response, nil
+}
+
+// StreamLocation ...
+func (s *Server) StreamLocation(stream pb.Maps_StreamLocationServer) error {
+	for {
+		location, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&pb.EmptyResponse{})
+		}
+		if err != nil {
+			return err
+		}
+
+		log.Println("Received a location")
+		log.Printf(" > latitude: %.1f", location.GetLat())
+		log.Printf(" > longitude: %.1f", location.GetLon())
+	}
 }
 
 func randNumber(min int, max int) int64 {
