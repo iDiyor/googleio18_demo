@@ -62,7 +62,7 @@ func (s *Server) GetDistance(ctx context.Context, req *pb.GetDistanceRequest) (*
 	log.Printf(" > origin: %s", req.GetOrigin())
 	log.Printf(" > dest: %s", req.GetDest())
 
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(1 * time.Second)
 
 	response := &pb.GetDistanceResponse{
 		Distance: randNumber(100, 500),
@@ -82,6 +82,7 @@ func (s *Server) StreamLocation(stream pb.Maps_StreamLocationServer) error {
 			return err
 		}
 
+		log.Println("------------------------")
 		log.Println("Received a location")
 		log.Printf(" > latitude: %.1f", location.GetLat())
 		log.Printf(" > longitude: %.1f", location.GetLon())

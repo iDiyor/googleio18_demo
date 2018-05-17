@@ -56,10 +56,16 @@ func streamLocation(client pb.MapsClient) {
 	}
 
 	for _, loc := range getRandomLocations() {
+
+		time.Sleep(2 * time.Second)
+
 		if err := stream.Send(loc); err != nil {
 			log.Fatalf("%v.Send(%v) = %v", stream, loc, err)
 		}
 	}
+
+	log.Println("------------------------")
+	log.Println("Locations are sent")
 
 	_, err = stream.CloseAndRecv()
 	if err != nil {
@@ -71,11 +77,11 @@ func streamLocation(client pb.MapsClient) {
 // Helper methods
 //#########################
 func getRandomLocations() []*pb.Location {
-	result := make([]*pb.Location, 100)
+	result := make([]*pb.Location, 1000)
 
-	for i := 0; i < 100; i++ {
-		lat := randNumber(10, 100)
-		lon := randNumber(10, 100)
+	for i := 0; i < 1000; i++ {
+		lat := randNumber(10, 50)
+		lon := randNumber(50, 100)
 		location := &pb.Location{
 			Lat: lat,
 			Lon: lon,
@@ -88,6 +94,6 @@ func getRandomLocations() []*pb.Location {
 }
 
 func randNumber(min int, max int) float64 {
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 	return float64(rand.Intn(max-min) + min)
 }
